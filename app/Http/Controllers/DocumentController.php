@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Validator;
+use App\Models\Category;
 use App\Models\Document;
 use Illuminate\Http\Request;
 
@@ -26,7 +28,22 @@ class DocumentController extends Controller
     public function create()
     {
         //
-        return view('document.create');
+        return view('document.create',[ "categories"=> \App\Models\Category::all() ]);
+    }
+    
+    /**
+    * 
+    *
+    * @return array
+    */
+    private function messages()
+    {
+        return [
+            'name.required' => 'Заполните название поля',
+            'description.required'  => 'Дайте описание документа',
+            'document.required'  => 'Прикрепите файл',
+            'document.mimes'  => 'Не верный формат файла. Выберите верный файл',
+        ];
     }
 
     /**
@@ -36,11 +53,30 @@ class DocumentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
-//        $this->validate($request, [
-//            'title' => 'required|unique:posts|max:255',
-//            'body' => 'required',
-//        ]);
+    {   
+        
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'document' => 'required|file|mimes:pdf,doc,docx',
+            'categories'=>'required|array|min:1',
+            'categories.*'=>'required|string|distinct',
+        ], $this->messages());
+        
+        if ($validator->fails()) {
+            return redirect('documents/create')
+                        ->withErrors($validator)
+                        ->withInput();
+        }
+        
+        $document = new Document;
+        $document->name = $request->name;
+        $document->description = $request->description;
+        $document->filepath = $request->document->store('documents','public');
+        $document->data = $request->document;
+        $document->save();
+        $document->categories()->attach($request->categories);
+        return redirect('documents/create');
     }
 
     /**

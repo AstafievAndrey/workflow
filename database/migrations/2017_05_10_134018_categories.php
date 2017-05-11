@@ -20,6 +20,13 @@ class Categories extends Migration
             $table->longText('description')->nullable()->comment('Описание категории');
             $table->timestamps();
         });
+        
+        DB::table('categories')->insert(
+            array(
+                'name' => 'Заявления',
+                'description' => 'Примеры заявлений на отпуска, отгулы и прочее'
+            )
+        );
     }
 
     /**

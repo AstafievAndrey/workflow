@@ -16,8 +16,7 @@ class DocumentsCategories extends Migration
         Schema::create('documents_categories', function (Blueprint $table) {
             $table->integer('document_id');
             $table->integer('category_id');
-            $table->timestamps();
-            
+
             $table->primary(['document_id', 'category_id']);
             $table->foreign('document_id')->references('id')->on('documents')
                     ->onDelete('cascade');
